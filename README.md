@@ -32,7 +32,7 @@ $ python ddpm.py
 </table>
 
 
-References:
-[1] Started the code based on outlier's [[github](https://github.com/dome272/Diffusion-Models-pytorch)]
+## References:
+[1] Started the code based on outlier's "Diffusion-Models-pytorch" repo on [github](https://github.com/dome272/Diffusion-Models-pytorch).
 
-[2] Also used his youtube tutorial [[Diffusion Models | Pytorch Implementation](https://www.youtube.com/watch?v=TBCRlnwJtZU)]
+[2] Also used his youtube tutorial [[Diffusion Models | Pytorch Implementation](https://www.youtube.com/watch?v=TBCRlnwJtZU)].
