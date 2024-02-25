@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from tqdm import tqdm
 from torch import optim
 from utils import *
+from modules import UNet
 
 import logging
 
@@ -34,18 +35,55 @@ class Diffusion:
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.noise_steps, size=(n,))
 
+    # model: Denoising network (typically U-net or denoising autoencoder)
+    # n:     Number of images to be generated
+    def sample(self, model, n):
+        logging.info(f"Sampling {n} images ...")
+        model.eval()
+        with torch.no_grad():
+            # Create initial noised images x_T (for ex. T=1000) for the reverse diffusion process
+            x = torch.randn((n, 3, self.img_size, self.img_size)).to(self.device)
+            # Reverse (diffusion) process time steps (for.ex 1000...1)
+            for i in tqdm(reversed(range(1, self.noise_steps))):
+                # time step (t=1000..1) for each of the n images 
+                t = (torch.ones(n) * i).long().to(self.device)
+                predicted_noise = model(x, t)
+
+
+                alpha = self.alpha[t][:,None,None,None]
+                alpha_hat = self.alpha_hat[t][:,None,None,None]
+                beta = self.beta[t][:,None,None,None]
+                # At time steps t>1: We subtract the predicted noise then add some noise back weighted with beta
+                # At last time step t=1: No noise is added (see noise=0)
+                if i > 1:
+                    noise = torch.randn_like(x)
+                else:
+                    noise = torch.zeros_like(x)
+
+                x = 1 / torch.sqrt(alpha) * (x - ((1 - alpha) / torch.sqrt(1 - alpha_hat)) * predicted_noise) + torch.sqrt(beta) * noise
+        model.train()
+
+        # Clamp the output to normalized range of (-1,1)
+        x = x.clamp(-1, 1)
+
+        return x
+
+
+
 
 def train(args):
     device = args.device
     # Get Data Loader
     dataloader = get_data(args)
-    #model = UNet().to(device)
+    model = UNet().to(device)
     #optimizer = optim.AdamW(model.parameters(), lr=args.lr)
     #mse = nn.MSELoss()    
     diffusion = Diffusion(img_size=args.image_size, device=device)
 
     pbar = tqdm(dataloader)
     for i, (images, _) in enumerate(pbar):
+        if i > 0:
+            break
         images = images.to(device)
         t = diffusion.sample_timesteps(images.shape[0]).to(device)
         x_t, noise = diffusion.noise_images(images, t)
@@ -54,6 +92,8 @@ def train(args):
         grid_img = torchvision.utils.make_grid(images, nrow=6)
         torchvision.utils.save_image(grid_img_noised, 'eren_noised.png')
         torchvision.utils.save_image(grid_img, 'eren.png')
+
+    sampled_images = diffusion.sample(model, n=images.shape[0])
 #def launch():
 
 
