@@ -76,8 +76,8 @@ def train(args):
     # Get Data Loader
     dataloader = get_data(args)
     model = UNet().to(device)
-    #optimizer = optim.AdamW(model.parameters(), lr=args.lr)
-    #mse = nn.MSELoss()    
+    optimizer = optim.AdamW(model.parameters(), lr=args.lr)
+    mse = nn.MSELoss()    
     diffusion = Diffusion(img_size=args.image_size, device=device)
 
     pbar = tqdm(dataloader)
@@ -88,10 +88,20 @@ def train(args):
         t = diffusion.sample_timesteps(images.shape[0]).to(device)
         x_t, noise = diffusion.noise_images(images, t)
         #
-        grid_img_noised = torchvision.utils.make_grid(x_t, nrow=6)
-        grid_img = torchvision.utils.make_grid(images, nrow=6)
-        torchvision.utils.save_image(grid_img_noised, 'eren_noised.png')
-        torchvision.utils.save_image(grid_img, 'eren.png')
+        #grid_img_noised = torchvision.utils.make_grid(x_t, nrow=6)
+        #grid_img = torchvision.utils.make_grid(images, nrow=6)
+        #torchvision.utils.save_image(grid_img_noised, 'eren_noised.png')
+        #torchvision.utils.save_image(grid_img, 'eren.png')
+
+        predicted_noise = model(x_t, t)
+        loss = mse(noise, predicted_noise)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        pbar.set_postfix(MSE=loss.item())
+
 
     sampled_images = diffusion.sample(model, n=images.shape[0])
 #def launch():
@@ -102,7 +112,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
-    args.run_name = "DDPM_Uncondtional"
+    args.run_name = "DDPM_Unconditional"
     args.epochs = 500
     args.batch_size = 12
     args.image_size = 64
