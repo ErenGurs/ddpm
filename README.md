@@ -5,12 +5,16 @@ conda env create -f environment.yaml
 conda activate ddpm
 ```
 
-Download the [Landscape Dataset](https://www.kaggle.com/datasets/utkarshsaxenadn/landscape-recognition-image-dataset-12k-images) from Kaggle. For convenience I put in blobby
+Download the [Landscape Dataset](https://www.kaggle.com/datasets/utkarshsaxenadn/landscape-recognition-image-dataset-12k-images) from Kaggle as archive.zip.
 
 ```
-$ blobby s3 cp s3://Qixin_Selected_for_FlowAnalysis/Datasets/archive.zip ./
-$ mkdir landscape_img_folder/train
+$ mkdir -p landscape_img_folder/train
 $ unzip archive.zip -d landscape_img_folder/train/
+```
+
+For my convenience I put in blobby and everything is setup by running:
+```
+source ./setup.sh
 ```
 
 Then run:
