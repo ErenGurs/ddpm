@@ -18,3 +18,15 @@ echo "Downloading s3://egurses-diffusion/Datasets/CIFAR.zip"
 conductor s3 cp s3://egurses-diffusion/Datasets/CIFAR.zip .
 echo "Uncompressing CIFAR.zip to cifar/"
 unzip CIFAR.zip -d cifar10/ > /dev/null 2>&1
+
+
+echo
+mkdir -p img_align_celeba/train/
+echo "Downloading s3://egurses-diffusion/Datasets/celeba.zip"
+conductor s3 cp s3://egurses-diffusion/Datasets/celeba.zip ./
+echo "Uncompressing celeba.zip to celeba/"
+unzip ./celeba.zip
+echo "Uncompress celeba/img_align_celeba.zip to img_align_celeba/"
+unzip -j celeba/img_align_celeba.zip -d img_align_celeba/train/ > /dev/null 2>&1 
+
+

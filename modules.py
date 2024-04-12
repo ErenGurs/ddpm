@@ -147,8 +147,8 @@ class UNet(nn.Module):
         t = t.unsqueeze(-1).type(torch.float)
         t = self.pos_encoding(t, self.time_dim)
 
-        summary(self.inc, (12,3,64,64))
-        summary(self.down1, [(12,64,64,64), (12,256)])
+        #summary(self.inc, (12,3,64,64))
+        #summary(self.down1, [(12,64,64,64), (12,256)])
         x1 = self.inc(x)
         x2 = self.down1(x1, t)  # x2: It has timestep positional encoding in it
         x2 = self.sa1(x2)       #     It will use this x2 at the decoder (self-attention output)
