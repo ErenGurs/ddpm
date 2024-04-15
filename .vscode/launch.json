@@ -9,7 +9,14 @@
             "type": "python",
             "request": "launch",
             "program": "ddpm.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": [
+                "--epochs",
+                "30",
+                "--ckpt",
+                //"/mnt/task_runtime/ddpm/models/DDPM_Unconditional/ckpt.pt",
+                "/mnt/task_runtime/ddpm/models/DDPM_Unconditional/ckpt_epoch80.pt",
+            ],
         }
     ]
 }

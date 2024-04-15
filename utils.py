@@ -1,7 +1,7 @@
 import os
 import torch
 import torchvision
-#from PIL import Image
+from PIL import Image
 #from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader
 
