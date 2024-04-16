@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+from utils import *
 #import torch.nn.functional as F
 
 class GaussianDiffusion(nn.Module):
@@ -51,6 +52,8 @@ class GaussianDiffusion(nn.Module):
     # n:     Number of images to be generated
     def sample(self, model, n):
         #logging.info(f"Sampling {n} images ...")
+        a=1
+        os.makedirs("results/denoised/", exist_ok=True)
         model.eval()
         with torch.no_grad():
             # Create initial noised images x_T (for ex. T=1000) for the reverse diffusion process
@@ -73,6 +76,12 @@ class GaussianDiffusion(nn.Module):
                     noise = torch.zeros_like(x)
 
                 x = 1 / torch.sqrt(alpha) * (x - ((1 - alpha) / torch.sqrt(1 - alpha_hat)) * predicted_noise) + torch.sqrt(beta) * noise
+                # See slowly denoised images
+                if i % 50 == 1:
+                    y = (x.clamp(-1, 1) + 1) / 2
+                    y = (y * 255).type(torch.uint8)
+                    save_images(y, os.path.join("results/denoised/", f"denoised_{a:03d}.jpg"))
+                    a=a+1
         model.train()
 
         # Clamp the output to normalized range of (-1,1)

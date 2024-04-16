@@ -17,7 +17,7 @@ For my convenience I put in blobby and everything is setup by running:
 source ./setup.sh
 ```
 
-Then run:
+Then for training:
 ```
 $ python ddpm.py
 ```
@@ -35,6 +35,27 @@ $ python ddpm.py
   </tr>
 </table>
 
+</br>
+</br>
+</br>
+
+
+
+
+
+For sampling from an earlier checkpoint (saved as models/ckpt_epoch80.pt):
+```
+python ddpm.py --ckpt /mnt/task_runtime/ddpm/models/ckpt_epoch80.pt --ckpt_sampling
+```
+<table>
+<caption style="caption-side:bottom"> Denoising in T=1000 iterations </caption>
+  <tr>
+    <td> <img src="images/ddpm_slow.gif"/> </td>
+  
+  </tr>
+</table>
+
+Generated the gif by ``ffmpeg -framerate 5  -i results/denoised/denoised_%3d.jpg ddpm_slow.gif``
 
 ## References:
 [1] Started the code based on outlier's "Diffusion-Models-pytorch" repo on [github](https://github.com/dome272/Diffusion-Models-pytorch).
