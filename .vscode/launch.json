@@ -5,11 +5,26 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "ddpm",
+            "name": "ddpm sampling",
             "type": "python",
             "request": "launch",
             "program": "ddpm.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": [
+                "--ckpt",
+                //"/mnt/task_runtime/ddpm/models/DDPM_Unconditional/ckpt.pt",
+                "/mnt/task_runtime/ddpm/models/DDPM_Unconditional/ckpt_epoch80.pt",
+                "--ckpt_sampling",
+            ],
+        },
+        {
+            "name": "ddpm training",
+            "type": "python",
+            "request": "launch",
+            "program": "ddpm.py",
+            "console": "integratedTerminal",
+            "args": [
+            ],
         }
     ]
 }
