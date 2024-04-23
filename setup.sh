@@ -29,4 +29,8 @@ unzip ./celeba.zip
 echo "Uncompress celeba/img_align_celeba.zip to img_align_celeba/"
 unzip -j celeba/img_align_celeba.zip -d img_align_celeba/train/ > /dev/null 2>&1 
 
+echo "Downloading checkpoints for celeba"
+conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch80.pt ./models/
+conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch300.pt ./models/
+
 

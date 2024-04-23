@@ -110,8 +110,8 @@ class UNet(nn.Module):
         self.time_dim = time_dim
 
         # Encoder
-        self.inc = DoubleConv(c_in, 64)
-        self.down1 = Down(64, 128)
+        self.inc = DoubleConv(c_in, 64)    # summary(self.inc, (12,3,64,64))
+        self.down1 = Down(64, 128)         # summary(self.down1, [(12,64,64,64), (12,256)])
         self.sa1 = SelfAttention(128, 32)
         self.down2 = Down(128, 256)
         self.sa2 = SelfAttention(256, 16)

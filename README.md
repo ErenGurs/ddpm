@@ -12,7 +12,7 @@ $ mkdir -p landscape_img_folder/train
 $ unzip archive.zip -d landscape_img_folder/train/
 ```
 
-For my convenience I put in blobby and everything is setup by running:
+For my convenience I set up the buckets and download datasets, checkpoints etc. by running:
 ```
 source ./setup.sh
 ```
@@ -43,17 +43,21 @@ $ python ddpm.py
 
 
 
-For sampling from an earlier checkpoint (saved as models/ckpt_epoch80.pt):
+Also trained it for the `celeba` dataset. Download two example checkpoints (epoch 80,300) from the bucket (or `/ddpm/models_celeba/`). Then sample from these two checkpoints (saved as models/ckpt_epoch[80,300].pt):
 ```
 python ddpm.py --ckpt /mnt/task_runtime/ddpm/models/ckpt_epoch80.pt --ckpt_sampling
 ```
-<table>
-<caption style="caption-side:bottom"> Denoising in T=1000 iterations </caption>
-  <tr>
-    <td> <img src="images/ddpm_slow.gif"/> </td>
-  
-  </tr>
-</table>
+<figure>
+<img src="images/ddpm_slow.gif">
+<figcaption>Epoch 80 ckpt</figcaption>
+</figure>
+
+<figure>
+<img src="images/ddpm_slow_ckpt_epoch300.gif">
+<figcaption>Epoch 300 ckpt</figcaption>
+</figure>
+
+
 
 Generated the gif by ``ffmpeg -framerate 5  -i results/denoised/denoised_%3d.jpg ddpm_slow.gif``
 
