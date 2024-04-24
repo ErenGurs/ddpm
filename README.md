@@ -48,13 +48,13 @@ Also trained it for the `celeba` dataset. Download two example checkpoints (epoc
 python ddpm.py --ckpt /mnt/task_runtime/ddpm/models/ckpt_epoch80.pt --ckpt_sampling
 ```
 <figure>
-<img src="images/ddpm_slow.gif">
 <figcaption>Epoch 80 ckpt</figcaption>
+<img src="images/ddpm_slow.gif" width=75%>
 </figure>
 
 <figure>
-<img src="images/ddpm_slow_ckpt_epoch300.gif">
 <figcaption>Epoch 300 ckpt</figcaption>
+<img src="images/ddpm_slow_ckpt_epoch300.gif" width=75%>
 </figure>
 
 
