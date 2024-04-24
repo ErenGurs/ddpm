@@ -17,7 +17,7 @@ def get_data(args):
     return dataloader
 
 def save_images(images, path, **kwargs):
-    grid = torchvision.utils.make_grid(images, **kwargs)
+    grid = torchvision.utils.make_grid(images, **kwargs, nrow=images.shape[0]//2)
     ndarr = grid.permute(1, 2, 0).to('cpu').numpy()
     im = Image.fromarray(ndarr)
     im.save(path)
