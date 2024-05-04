@@ -7,49 +7,65 @@ from torch import optim
 from utils import *
 from modules import UNet
 
+from accelerate import Accelerator
+
 import logging
 from torch.utils.tensorboard import SummaryWriter
 from denoising_diffusion_outlier import GaussianDiffusion
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s: %(message)s", level=logging.INFO, datefmt="%I:%H:%S")
 
+class Trainer(object):
+    def __init__(
+        self,
+        args,
+        amp = False,
+        mixed_precision_type = 'fp16',
+        split_batches = True
+    ):
 
+        super().__init__()
 
-def train(args):
-    setup_logging(args.run_name)
-    device = args.device
-    # Get Data Loader
-    dataloader = get_data(args)
-    model = UNet().to(device)
-    optimizer = optim.AdamW(model.parameters(), lr=args.lr)        
-    
-    mse = nn.MSELoss()
-    diffusion = GaussianDiffusion(model, img_size=args.image_size, device=device)
-    logger = SummaryWriter(os.path.join("runs", args.run_name))
-    l = len(dataloader)
+        self.accelerator = Accelerator(
+            split_batches = split_batches,
+            mixed_precision = mixed_precision_type if amp else 'no'
+        )
 
-    for epoch in range(args.epochs):
-        logging.info(f"Starting epoch {epoch}:")
-    
-        pbar = tqdm(dataloader)
-        for i, (images, _) in enumerate(pbar):
-            if args.ckpt:  # If checkpoint is specified, do not continue training
-                break
-            images = images.to(device)
+    def train(self, args):
+        setup_logging(args.run_name)
+        device = args.device
+        # Get Data Loader
+        dataloader = get_data(args)
+        model = UNet().to(device)
+        optimizer = optim.AdamW(model.parameters(), lr=args.lr)
+        
+        mse = nn.MSELoss()
+        diffusion = GaussianDiffusion(model, img_size=args.image_size, device=device)
+        logger = SummaryWriter(os.path.join("runs", args.run_name))
+        l = len(dataloader)
 
-            loss = diffusion(images)
+        for epoch in range(args.epochs):
+            logging.info(f"Starting epoch {epoch}:")
+        
+            pbar = tqdm(dataloader)
+            for i, (images, _) in enumerate(pbar):
+                if args.ckpt:  # If checkpoint is specified, do not continue training
+                    break
+                images = images.to(device)
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                loss = diffusion(images)
 
-            pbar.set_postfix(MSE=loss.item())
-            logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
-        # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
-        if epoch % 10 == 0:
-            sampled_images = diffusion.sample(model, n=images.shape[0])
-            save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
-            torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                pbar.set_postfix(MSE=loss.item())
+                logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
+            # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
+            if epoch % 10 == 0:
+                sampled_images = diffusion.sample(model, n=images.shape[0])
+                save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
+                torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
 
 
 def test(args):
@@ -113,4 +129,5 @@ if __name__ == '__main__':
     if args.ckpt_sampling :
         test(args)
     else:
-        train(args)
+        trainer = Trainer(args)
+        trainer.train(args)

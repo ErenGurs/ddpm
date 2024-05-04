@@ -25,6 +25,15 @@
             "console": "integratedTerminal",
             "args": [
             ],
+        },
+        {
+            "name": "ddpm_accelerate training",
+            "type": "python",
+            "request": "launch",
+            "program": "ddpm_accelerate.py",
+            "console": "integratedTerminal",
+            "args": [
+            ],
         }
     ]
 }
