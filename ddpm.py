@@ -47,7 +47,7 @@ def train(args):
             logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
         # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
         if epoch % 10 == 0:
-            sampled_images = diffusion.sample(model, n=images.shape[0])
+            sampled_images = diffusion.sample(n=images.shape[0])
             save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
             torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
 
@@ -88,7 +88,7 @@ def test(args):
     diffusion = GaussianDiffusion(model, img_size=args.image_size, device=device)
 
     # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
-    sampled_images = diffusion.sample(model, n=args.batch_size)
+    sampled_images = diffusion.sample(n=args.batch_size)
     save_images(sampled_images, os.path.join("results", args.run_name, f"sample.jpg"))
 
 

@@ -48,13 +48,13 @@ class GaussianDiffusion(nn.Module):
         #loss = mse(noise, predicted_noise)
         return loss
 
-    # model: Denoising network (typically U-net or denoising autoencoder)
+    # self.model: Denoising network (typically U-net or denoising autoencoder)
     # n:     Number of images to be generated
-    def sample(self, model, n):
+    def sample(self, n):
         #logging.info(f"Sampling {n} images ...")
         a=1
         os.makedirs("results/denoised/", exist_ok=True)
-        model.eval()
+        self.model.eval()
         with torch.no_grad():
             # Create initial noised images x_T (for ex. T=1000) for the reverse diffusion process
             x = torch.randn((n, 3, self.img_size, self.img_size)).to(self.device)
@@ -62,7 +62,7 @@ class GaussianDiffusion(nn.Module):
             for i in tqdm(reversed(range(1, self.noise_steps))):
                 # time step (t=1000..1) for each of the n images 
                 t = (torch.ones(n) * i).long().to(self.device)
-                predicted_noise = model(x, t)
+                predicted_noise = self.model(x, t)
 
 
                 alpha = self.alpha[t][:,None,None,None]
@@ -82,7 +82,7 @@ class GaussianDiffusion(nn.Module):
                     y = (y * 255).type(torch.uint8)
                     save_images(y, os.path.join("results/denoised/", f"denoised_{a:03d}.jpg"))
                     a=a+1
-        model.train()
+        self.model.train()
 
         # Clamp the output to normalized range of (-1,1)
         #x = x.clamp(-1, 1)

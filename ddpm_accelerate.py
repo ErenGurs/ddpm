@@ -23,49 +23,53 @@ class Trainer(object):
         mixed_precision_type = 'fp16',
         split_batches = True
     ):
-
         super().__init__()
+        self.args = args
 
         self.accelerator = Accelerator(
             split_batches = split_batches,
             mixed_precision = mixed_precision_type if amp else 'no'
         )
 
-    def train(self, args):
         setup_logging(args.run_name)
-        device = args.device
+        self.device = args.device
         # Get Data Loader
-        dataloader = get_data(args)
-        model = UNet().to(device)
-        optimizer = optim.AdamW(model.parameters(), lr=args.lr)
+        self.dataloader = get_data(args)
+        model = UNet().to(self.device)
+        self.optimizer = optim.AdamW(model.parameters(), lr=args.lr)
         
-        mse = nn.MSELoss()
-        diffusion = GaussianDiffusion(model, img_size=args.image_size, device=device)
-        logger = SummaryWriter(os.path.join("runs", args.run_name))
-        l = len(dataloader)
+        mse = nn.MSELoss() # not used, delete it!
+        self.diffusion = GaussianDiffusion(model, img_size=args.image_size, device=self.device)
+        self.logger = SummaryWriter(os.path.join("runs", args.run_name))
 
-        for epoch in range(args.epochs):
+
+    def train(self):
+
+        l = len(self.dataloader)
+
+        for epoch in range(self.args.epochs):
             logging.info(f"Starting epoch {epoch}:")
         
-            pbar = tqdm(dataloader)
+            pbar = tqdm(self.dataloader)
             for i, (images, _) in enumerate(pbar):
-                if args.ckpt:  # If checkpoint is specified, do not continue training
-                    break
-                images = images.to(device)
+                #if self.args.ckpt:  # If checkpoint is specified, do not continue training
+                #    break
+                images = images.to(self.device)
 
-                loss = diffusion(images)
-
-                optimizer.zero_grad()
+                loss = self.diffusion(images)
+                #if (i > 10): # To be removed. Quick training for debugging etc.
+                #    break
+                self.optimizer.zero_grad()
                 loss.backward()
-                optimizer.step()
+                self.optimizer.step()
 
                 pbar.set_postfix(MSE=loss.item())
-                logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
+                self.logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
             # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
             if epoch % 10 == 0:
-                sampled_images = diffusion.sample(model, n=images.shape[0])
+                sampled_images = self.diffusion.sample(n=images.shape[0])
                 save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
-                torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
+                torch.save(self.diffusion.model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
 
 
 def test(args):
@@ -104,7 +108,7 @@ def test(args):
     diffusion = GaussianDiffusion(model, img_size=args.image_size, device=device)
 
     # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
-    sampled_images = diffusion.sample(model, n=args.batch_size)
+    sampled_images = diffusion.sample(n=args.batch_size)
     save_images(sampled_images, os.path.join("results", args.run_name, f"sample.jpg"))
 
 
@@ -130,4 +134,4 @@ if __name__ == '__main__':
         test(args)
     else:
         trainer = Trainer(args)
-        trainer.train(args)
+        trainer.train()
