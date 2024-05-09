@@ -17,10 +17,16 @@ For my convenience I set up the buckets and download datasets, checkpoints etc. 
 source ./setup.sh
 ```
 
-Then for training:
+Then for training by using old single GPU training script:
 ```
 $ python ddpm.py
 ```
+
+Or alternatively use the new  <a href="https://huggingface.co/docs/accelerate/">🤗 Accelerate </a> for multi-GPU training. If needed, just run the same script `python ddpm_acclerate.py` to fall back to single GPU mode (for debugging etc.).
+```
+accelerate launch ddpm_accelerate.py
+```
+
 
 <a id="Reconstruction-table"></a>
 <table>

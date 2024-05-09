@@ -13,7 +13,7 @@
             "args": [
                 "--ckpt",
                 //"/mnt/task_runtime/ddpm/models/DDPM_Unconditional/ckpt.pt",
-                "/mnt/task_runtime/ddpm/models/DDPM_Unconditional/ckpt_epoch80.pt",
+                "/mnt/task_runtime/ddpm/models/ckpt_epoch80.pt",
                 "--ckpt_sampling",
             ],
         },

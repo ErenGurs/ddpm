@@ -34,14 +34,21 @@ class Trainer(object):
         setup_logging(args.run_name)
         self.device = args.device
         # Get Data Loader
-        self.dataloader = get_data(args)
+        #self.dataloader = get_data(args)
+        # Huggingface accelerate
+        self.dataloader = self.accelerator.prepare( get_data(args) )
         model = UNet().to(self.device)
         self.optimizer = optim.AdamW(model.parameters(), lr=args.lr)
-        
-        mse = nn.MSELoss() # not used, delete it!
-        self.diffusion = GaussianDiffusion(model, img_size=args.image_size, device=self.device)
+        self.diffusion_orig = GaussianDiffusion(model, img_size=args.image_size, device=self.device)
+        self.diffusion, self.optimizer = self.accelerator.prepare(self.diffusion_orig, self.optimizer)
+
+
         self.logger = SummaryWriter(os.path.join("runs", args.run_name))
 
+        if self.accelerator.is_main_process:
+            print("Initializations only needed by the main process is done here  (for. ex model reading/writing, EMA)")
+
+        mse = nn.MSELoss() # not used, delete it!
 
     def train(self):
 
@@ -56,20 +63,32 @@ class Trainer(object):
                 #    break
                 images = images.to(self.device)
 
-                loss = self.diffusion(images)
-                #if (i > 10): # To be removed. Quick training for debugging etc.
-                #    break
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
+                #loss = self.diffusion(images)
+                with self.accelerator.autocast():
+                    loss = self.diffusion(images)
+
+                #loss.backward()
+                self.accelerator.backward(loss)
 
                 pbar.set_postfix(MSE=loss.item())
                 self.logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
+
+                self.accelerator.wait_for_everyone()
+
+                self.optimizer.step()
+                self.optimizer.zero_grad()
+
+                self.accelerator.wait_for_everyone()
+
+                #if (i > 20): # To be removed. Quick training for debugging etc.
+                #    break
+
             # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
-            if epoch % 10 == 0:
-                sampled_images = self.diffusion.sample(n=images.shape[0])
+            if epoch % 10 == 0 and self.accelerator.is_main_process:
+                sampled_images = self.diffusion_orig.sample(n=images.shape[0])
                 save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
-                torch.save(self.diffusion.model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
+                #torch.save(self.diffusion.model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
+                torch.save(self.accelerator.get_state_dict(self.diffusion), os.path.join("models", args.run_name, f"ckpt_diffusion.pt"))
 
 
 def test(args):
