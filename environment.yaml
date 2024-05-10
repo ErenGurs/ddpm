@@ -28,3 +28,4 @@ dependencies:
     - kornia==0.6
     - matplotlib
     - torchinfo
+    - accelerate==0.29.3

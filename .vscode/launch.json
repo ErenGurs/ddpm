@@ -34,6 +34,19 @@
             "console": "integratedTerminal",
             "args": [
             ],
-        }
+        },
+        {
+            "name": "ddpm_accelerate sampling",
+            "type": "python",
+            "request": "launch",
+            "program": "ddpm_accelerate.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--ckpt",
+                //"/mnt/task_runtime/ddpm/models/DDPM_Unconditional/ckpt.pt",
+                "/mnt/task_runtime/ddpm/models/ckpt_epoch140_ddpm_accelerate.pt",
+                "--ckpt_sampling",
+            ],
+        },
     ]
 }
