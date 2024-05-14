@@ -30,17 +30,18 @@ class Trainer(object):
             split_batches = split_batches,
             mixed_precision = mixed_precision_type if amp else 'no'
         )
+        # DDP splits batch_size among training GPUs (better to use accelerator's num_process than torch.cuda.device_count
+        args.batch_size = args.batch_size * self.accelerator.state.num_processes
 
-        setup_logging(args.run_name)
         self.device = args.device
         # Get Data Loader
         #self.dataloader = get_data(args)
-        # Huggingface accelerate
         self.dataloader = self.accelerator.prepare( get_data(args) )
         model = UNet().to(self.device)
         self.optimizer = optim.AdamW(model.parameters(), lr=args.lr)
-        self.diffusion_orig = GaussianDiffusion(model, img_size=args.image_size, device=self.device)
-        self.diffusion, self.optimizer = self.accelerator.prepare(self.diffusion_orig, self.optimizer)
+        self.diffusion = GaussianDiffusion(model, img_size=args.image_size, device=self.device)
+        self.diffusion, self.optimizer = self.accelerator.prepare(self.diffusion, self.optimizer)
+        #print ('>>>> Current cuda device ', torch.cuda.current_device())
 
 
         self.logger = SummaryWriter(os.path.join("runs", args.run_name))
@@ -57,20 +58,22 @@ class Trainer(object):
         for epoch in range(self.args.epochs):
             logging.info(f"Starting epoch {epoch}:")
         
-            pbar = tqdm(self.dataloader)
+            #print(f"Number of GPUS: {self.accelerator.state.num_processes}")
+            #print(f"GPU{torch.cuda.current_device()}", self.dataloader)
+
+            # Disable tqdm on "not main" processes (i.e. show tqdm progress only for process on GPU0)
+            pbar = tqdm(self.dataloader, disable = not self.accelerator.is_main_process)
             for i, (images, _) in enumerate(pbar):
-                #if self.args.ckpt:  # If checkpoint is specified, do not continue training
-                #    break
+
                 images = images.to(self.device)
 
                 #loss = self.diffusion(images)
                 with self.accelerator.autocast():
                     loss = self.diffusion(images)
-
                 #loss.backward()
                 self.accelerator.backward(loss)
 
-                pbar.set_postfix(MSE=loss.item())
+                pbar.set_postfix(MSE=loss.item(), GPU=torch.cuda.current_device())
                 self.logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
 
                 self.accelerator.wait_for_everyone()
@@ -80,15 +83,18 @@ class Trainer(object):
 
                 self.accelerator.wait_for_everyone()
 
-                #if (i > 20): # To be removed. Quick training for debugging etc.
+                #if (i > 200): # To be removed. Quick training for debugging etc.
                 #    break
 
             # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
             if epoch % 10 == 0 and self.accelerator.is_main_process:
-                sampled_images = self.diffusion_orig.sample(n=images.shape[0])
+                # Before learning 'accelerator.unwrap_model(.)' this was how I got rid of the DDP layer (called 'module') wrapped around the model.
+                # diffusion = self.diffusion.module if isinstance(self.diffusion, nn.parallel.DistributedDataParallel) else self.diffusion
+                diffusion = self.accelerator.unwrap_model(self.diffusion)
+                sampled_images = diffusion.sample(n=images.shape[0])
                 save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
-                #torch.save(self.diffusion.model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
-                torch.save(self.accelerator.get_state_dict(self.diffusion), os.path.join("models", args.run_name, f"ckpt_diffusion.pt"))
+                #torch.save(self.accelerator.get_state_dict(self.diffusion.module.model), os.path.join("models", args.run_name, f"ckpt_diffusion.pt"))
+                torch.save(self.accelerator.get_state_dict(diffusion.model), os.path.join("models", args.run_name, f"ckpt_diffusion.pt"))
 
 
 def test(args):
@@ -100,6 +106,12 @@ def test(args):
     # Load model: Different from training No need for data loader or optimizer
     model = UNet().to(device)
 
+    # 1) checkpoint is an OrderedDict with list of keys given by checkpoint.keys()
+    #    For ex. checkpoint['inc.double_conv.0.weight'] gives weights (and biases) of the 
+    #    DoubleConv (inc.double_conv) where 0-4 refers to Conv2d, GroupNorm, GELU, Conv2d, GroupNorm 
+    # 2) OrderedDict can be iterated over its items():
+    #      for i, (key, value) in enumerate(checkpoint.items()):
+    #          print(key, value)
     checkpoint = torch.load(args.ckpt)
     model.load_state_dict(checkpoint)
     #
@@ -149,6 +161,9 @@ if __name__ == '__main__':
     args.dataset_path = r"./img_align_celeba/"
     args.device = "cuda"
     args.lr = 3e-4
+
+    setup_logging(args.run_name)
+
     if args.ckpt_sampling :
         test(args)
     else:
