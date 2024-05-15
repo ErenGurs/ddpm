@@ -17,14 +17,21 @@ For my convenience I set up the buckets and download datasets, checkpoints etc. 
 source ./setup.sh
 ```
 
-Then for training:
+## Training
+Use the original single GPU training script:
 ```
 $ python ddpm.py
 ```
 
+Or use new multi-GPU training script using <a href="https://huggingface.co/docs/accelerate/">🤗 Accelerate </a>.
+```
+accelerate launch ddpm_accelerate.py
+```
+**Note:** Running the same script `python ddpm_acclerate.py` will fall back to single GPU mode (for debugging etc.)
+
 <a id="Reconstruction-table"></a>
 <table>
-<caption style="caption-side:bottom"> Table: Noising process for iterations randomly sampled from [0,1000] </caption>
+<caption style="caption-side:bottom"> Table: For batch=12, noising process for random iterations from [0,1000] </caption>
   <tr>
     <td align="center"> Original </td>
     <td align="center"> Noised </td>
@@ -38,9 +45,6 @@ $ python ddpm.py
 </br>
 </br>
 </br>
-
-
-
 
 
 Also trained it for the `celeba` dataset. Download two example checkpoints (epoch 80,300) from the bucket (or `/ddpm/models_celeba/`). Then sample from these two checkpoints (saved as models/ckpt_epoch[80,300].pt):
