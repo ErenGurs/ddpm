@@ -32,9 +32,12 @@ $$q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t}
 
 using a linear $\beta_t$ schedule where $\alpha_t= 1-\beta_t$  and $\bar{\alpha}_t = \prod_{s=1}^t \alpha_s$. For ex. in the code $\beta_t$ is selected as a linear schedule $[0.0001, 0.02]$. For given $\beta_t$ schedule and large  $t \in [0,1000]$, the $q(\mathbf{x}_t|\mathbf{x}_0)$ becomes a zero mean, unit variance normal distribution.
 
-|   Noised samples $q(\mathbf{x}_t \|\mathbf{x}_0)$   |      Original $q(\mathbf{x}_0)$           |
+
+<!--   |  ![](images/noised.png)                   |  ![](images/original.png)                  |  -->
+
+|   Noised samples $q(\mathbf{x}_t \|\mathbf{x}_0)$   |      Original $q(\mathbf{x}_0)$  |
 |:-----------------------------------------:|:------------------------------------------:|
-|  ![](images/noised.png)                   |  ![](images/original.png)                  |
+|  <img src="./images/noised.png"><img>      |  <img src="./images/original.png"><img>   |
 
 Table: For batch B=12, it illustrates the noising process for $t=[962, 237,  38,  39, 988, 559, 299, 226, 985, 791, 859, 485]$
 
