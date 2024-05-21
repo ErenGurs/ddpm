@@ -34,12 +34,15 @@ using a linear $\beta_t$ schedule where $\alpha_t= 1-\beta_t$  and $\bar{\alpha}
 
 
 <!--   |  ![](images/noised.png)                   |  ![](images/original.png)                  |  -->
+<!--  ![Noised](images/noised.png)  -->
 
 |   Noised samples $q(\mathbf{x}_t \|\mathbf{x}_0)$   |      Original $q(\mathbf{x}_0)$  |
 |:-----------------------------------------:|:------------------------------------------:|
-|  <img src="./images/noised.png"><img>      |  <img src="./images/original.png"><img>   |
+| ![](images/noised.png)      |  ![](images/original.png)  |
 
 Table: For batch B=12, it illustrates the noising process for $t=[962, 237,  38,  39, 988, 559, 299, 226, 985, 791, 859, 485]$
+
+
 
 <!--
 <a id="Reconstruction-table"></a>
