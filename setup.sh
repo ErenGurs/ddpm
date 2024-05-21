@@ -35,5 +35,6 @@ conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch300.pt ./mod
 #conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch100_ddpm_accelerate.pt ./models/
 #conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch140_ddpm_accelerate.pt ./models/
 conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch80_ddpm_accelerate.pt ./models/
+conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch490_ddpm_accelerate.pt ./models/
 
 

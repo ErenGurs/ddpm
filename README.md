@@ -18,20 +18,30 @@ source ./setup.sh
 ```
 
 ## Training
-Use the original single GPU training script:
-```
-$ python ddpm.py
-```
-
-Or use new multi-GPU training script using <a href="https://huggingface.co/docs/accelerate/">🤗 Accelerate </a>.
+Use multi-GPU training script using <a href="https://huggingface.co/docs/accelerate/">🤗 Accelerate </a>.
 ```
 accelerate launch ddpm_accelerate.py
 ```
-**Note:** Running the same script `python ddpm_acclerate.py` will fall back to single GPU mode (for debugging etc.)
+**Note:** Running the same script as `python ddpm_acclerate.py` will fall back to single GPU mode (no effect of _accelerate_). Therefore, the same script can be directly used for single GPU tasks like sampling/inference or debugging. So I decided to retire the single GPU script `ddpm.py`.
 
+
+### Details and Illustrations on Training
+In training, U-Net is trained to estimate the noise (i.e. the mean of the noising process) from the noised samples $q(\mathbf{x}_t|\mathbf{x}_0)$ which are given by normal distribution:
+
+$$q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t} \mathbf{x}_0, (1-\bar{\alpha}_t) \mathbf{I} )$$
+
+using a linear $\beta_t$ schedule where $\alpha_t= 1-\beta_t$  and $\bar{\alpha}_t = \prod_{s=1}^t \alpha_s$. For ex. in the code $\beta_t$ is selected as a linear schedule $[0.0001, 0.02]$. For given $\beta_t$ schedule and large  $t \in [0,1000]$, the $q(\mathbf{x}_t|\mathbf{x}_0)$ becomes a zero mean, unit variance normal distribution.
+
+|   Noised samples $q(\mathbf{x}_t \|\mathbf{x}_0)$   |      Original $q(\mathbf{x}_0)$           |
+|:-----------------------------------------:|:------------------------------------------:|
+|  ![](images/noised.png)                   |  ![](images/original.png)                  |
+
+Table: For batch B=12, it illustrates the noising process for $t=[962, 237,  38,  39, 988, 559, 299, 226, 985, 791, 859, 485]$
+
+<!--
 <a id="Reconstruction-table"></a>
 <table>
-<caption style="caption-side:bottom"> Table: For batch=12, noising process for random iterations from [0,1000] </caption>
+<caption style="caption-side:bottom"> Table: For batch=12, noising process for t=[962, 237,  38,  39, 988, 559, 299, 226, 985, 791, 859, 485] random iterations $$t \in [0,1000]$$ </caption>
   <tr>
     <td align="center"> Original </td>
     <td align="center"> Noised </td>
@@ -41,15 +51,16 @@ accelerate launch ddpm_accelerate.py
     <td> <img src="images/noised.png" width="500"/> </td>
   </tr>
 </table>
+-->
 
 </br>
 </br>
 </br>
 
-
-Also trained it for the `celeba` dataset. Download two example checkpoints (epoch 80,300) from the bucket (or `/ddpm/models_celeba/`). Then sample from these two checkpoints (saved as models/ckpt_epoch[80,300].pt):
+## Sampling
+Also trained it for the `celeba` dataset. Download two example checkpoints (epoch 30, 80, 490) from the bucket (or `/ddpm/models_celeba/`). Then sample from these two checkpoints (saved as models/ckpt_epoch[30, 80, 490]_ddpm.pt):
 ```
-python ddpm.py --ckpt /mnt/task_runtime/ddpm/models/ckpt_epoch80.pt --ckpt_sampling
+python ddpm_accelerate.py --ckpt /mnt/task_runtime/ddpm/models/ckpt_epoch490.pt --ckpt_sampling
 ```
 <figure>
 <figcaption>Epoch 80 ckpt</figcaption>

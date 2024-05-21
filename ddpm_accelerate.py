@@ -55,8 +55,12 @@ class Trainer(object):
 
         l = len(self.dataloader)
 
+        # Disable logging
+        #logging.basicConfig(disabled = not self.accelerator.is_main_process)
+
         for epoch in range(self.args.epochs):
-            logging.info(f"Starting epoch {epoch}:")
+            if self.accelerator.is_main_process:
+                logging.info(f"Starting epoch {epoch} :")
         
             #print(f"Number of GPUS: {self.accelerator.state.num_processes}")
             #print(f"GPU{torch.cuda.current_device()}", self.dataloader)
@@ -75,6 +79,7 @@ class Trainer(object):
 
                 pbar.set_postfix(MSE=loss.item(), GPU=torch.cuda.current_device())
                 self.logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
+                print(f"Loss={loss.item()},  GPU={torch.cuda.current_device()}, epoch*l+i={epoch*l} + {i}")
 
                 self.accelerator.wait_for_everyone()
 
@@ -157,8 +162,8 @@ if __name__ == '__main__':
     args.epochs = 500
     args.batch_size = 12
     args.image_size = 64
-    #args.dataset_path = r"./landscape_img_folder"
-    args.dataset_path = r"./img_align_celeba/"
+    args.dataset_path = r"./landscape_img_folder"
+    #args.dataset_path = r"./img_align_celeba/"
     args.device = "cuda"
     args.lr = 3e-4
 
