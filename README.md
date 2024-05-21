@@ -28,9 +28,9 @@ accelerate launch ddpm_accelerate.py
 ### Details and Illustrations on Training
 In training, U-Net is trained to estimate the noise (i.e. the mean of the noising process) from the noised samples $q(\mathbf{x}_t|\mathbf{x}_0)$ which are given by normal distribution:
 
-$$q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t} \mathbf{x}_0, (1-\bar{\alpha}_t) \mathbf{I} )$$
+$$q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha} _t} \mathbf{x}_0, (1-\bar{\alpha}_t) \mathbf{I} )$$
 
-using a linear $\beta_t$ schedule where $\alpha_t= 1-\beta_t$  and $\bar{\alpha}\_t = {\prod\_{s=1}}^t \alpha\_s$. For ex. in the code $\beta_t$ is selected as a linear schedule $[0.0001, 0.02]$. For given $\beta_t$ schedule and large  $t \in [0,1000]$, the $q(\mathbf{x}_t|\mathbf{x}_0)$ becomes zero mean, unit variance normal distribution (as illustrated below).
+using a linear $\beta_t$ schedule where $\alpha_t= 1-\beta_t$  and $\bar{\alpha}_t = \Pi _{s=1}^t \alpha_s$. For ex. in the code $\beta_t$ is selected as a linear schedule $[0.0001, 0.02]$. For given $\beta_t$ schedule and large  $t \in [0,1000]$, the $q(\mathbf{x}_t|\mathbf{x}_0)$ becomes zero mean, unit variance normal distribution (as illustrated below).
 
 <!--
 Due to bug: https://stackoverflow.com/questions/78158848/how-to-render-both-of-latex-formula-and-image-in-markdown-table-in-github-readme
