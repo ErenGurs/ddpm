@@ -30,15 +30,19 @@ In training, U-Net is trained to estimate the noise (i.e. the mean of the noisin
 
 $$q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t} \mathbf{x}_0, (1-\bar{\alpha}_t) \mathbf{I} )$$
 
-using a linear $\beta_t$ schedule where $\alpha_t= 1-\beta_t$  and $\bar{\alpha}_t = \prod_{s=1}^t \alpha_s$. For ex. in the code $\beta_t$ is selected as a linear schedule $[0.0001, 0.02]$. For given $\beta_t$ schedule and large  $t \in [0,1000]$, the $q(\mathbf{x}_t|\mathbf{x}_0)$ becomes a zero mean, unit variance normal distribution.
+using a linear $\beta_t$ schedule where $\alpha_t= 1-\beta_t$  and $\bar{\alpha}\_t = {\prod\_{s=1}}^t \alpha\_s$. For ex. in the code $\beta_t$ is selected as a linear schedule $[0.0001, 0.02]$. For given $\beta_t$ schedule and large  $t \in [0,1000]$, the $q(\mathbf{x}_t|\mathbf{x}_0)$ becomes zero mean, unit variance normal distribution (as illustrated below).
+
+<!--
+Due to bug: https://stackoverflow.com/questions/78158848/how-to-render-both-of-latex-formula-and-image-in-markdown-table-in-github-readme
+-->
+- **Noised samples   :** $q(\mathbf{x}_t \|\mathbf{x}_0)$
+- **Original samples :** $q(\mathbf{x}_0)$
 
 
-<!--   |  ![](images/noised.png)                   |  ![](images/original.png)                  |  -->
-<!--  ![Noised](images/noised.png)  -->
-
-|   Noised samples $q(\mathbf{x}_t \|\mathbf{x}_0)$   |      Original $q(\mathbf{x}_0)$  |
+|   Noised samples  |      Original  |
 |:-----------------------------------------:|:------------------------------------------:|
 | ![](images/noised.png)      |  ![](images/original.png)  |
+<!--|  <img src="images/noised.png"><img>      |  <img src="images/original.png"><img>   |  -->
 
 Table: For batch B=12, it illustrates the noising process for $t=[962, 237,  38,  39, 988, 559, 299, 226, 985, 791, 859, 485]$
 
