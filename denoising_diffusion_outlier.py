@@ -4,6 +4,7 @@ import torch.nn as nn
 from tqdm import tqdm
 from utils import *
 #import torch.nn.functional as F
+from plot_alpha_beta import *
 
 class GaussianDiffusion(nn.Module):
     def __init__(self, model, noise_steps=1000, beta_start=1e-4, beta_end=0.02, img_size=64, device="cuda"):
@@ -23,6 +24,7 @@ class GaussianDiffusion(nn.Module):
         self.alpha = 1. - self.beta
         self.alpha_hat = torch.cumprod(self.alpha, dim=0)
         #self.mse = nn.MSELoss()
+        plot_alpha_beta(self.alpha_hat, self.beta)
 
     def noise_images(self, x, t):
         sqrt_alpha_hat = torch.sqrt(self.alpha_hat[t])[:, None, None, None]

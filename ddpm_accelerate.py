@@ -158,6 +158,7 @@ if __name__ == '__main__':
     parser.add_argument('--ckpt_sampling', default=False, action='store_true',
                     help='Random image sampling using the checkpoint provided by --ckpt')
     args = parser.parse_args()
+    #args.run_name = "DDPM_Unconditional_landscape"
     args.run_name = "DDPM_Unconditional"
     args.epochs = 500
     args.batch_size = 12
