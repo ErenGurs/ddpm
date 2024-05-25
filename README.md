@@ -1,11 +1,11 @@
-# ddpm
+# Diffusion Models
 Create environment:
 ```
 conda env create -f environment.yaml
 conda activate ddpm
 ```
 
-Download the [Landscape Dataset](https://www.kaggle.com/datasets/utkarshsaxenadn/landscape-recognition-image-dataset-12k-images) from Kaggle as archive.zip, (or Celeba [Align&Cropped](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)) 
+Download the [Landscape Dataset](https://www.kaggle.com/datasets/utkarshsaxenadn/landscape-recognition-image-dataset-12k-images) from Kaggle as archive.zip or the [Celeba dataset](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) (aligned & cropped) as [img_align_celeba.zip](https://drive.google.com/file/d/0B7EVK8r0v71pZjFTYXZWM3FlRnM/view?usp=drive_link&resourcekey=0-dYn9z10tMJOBAkviAcfdyQ).
 
 ```
 $ mkdir -p landscape_img_folder/train
@@ -18,7 +18,7 @@ source ./setup.sh
 ```
 
 ## Sampling
-Also trained it for the `celeba` dataset. Download two example checkpoints (epoch 30, 80, 490) from the bucket (or `/ddpm/models_celeba/`). Then sample from these two checkpoints (saved as models/ckpt_epoch[30, 80, 490]_ddpm.pt):
+Also trained it for the `celeba` dataset. Download three example checkpoints (epoch 30, 80, 490) from the bucket (or `/ddpm/models_celeba/`). Then sample from these three checkpoints (saved as models/ckpt_epoch[30, 80, 490]_ddpm.pt):
 ```
 python ddpm_accelerate.py --ckpt /mnt/task_runtime/ddpm/models/ckpt_epoch490.pt --ckpt_sampling
 ```
@@ -57,7 +57,7 @@ Below images show noising of images used in training (see [Details on Notation](
 Fig. For batch B=12, illustrates the noising process for $t=[962, 237,  38,  39, 988, 559, 299, 226, 985, 791, 859, 485]$
 
 ### <a name="details"></a> Details on Notation 
-Noising (or diffusion) is defined as a Markovian process of states $\mathbf{x}_0,...\mathbf{x}_T$ with Normal distribution given by $q(\mathbf{x} _t|\mathbf{x} _{t-1}) = \mathcal{N}(\mathbf{x} _t; \sqrt{1-\beta _t} \mathbf{x} _{t-1}, \beta _t \mathbf{I} )$ for small values of $\beta_t$.
+Noising (or diffusion) is defined as a Markovian process over states $\mathbf{x}_0,...\mathbf{x}_T$ with transitions from Normal distributions given by $q(\mathbf{x} _t|\mathbf{x} _{t-1}) = \mathcal{N}(\mathbf{x} _t; \sqrt{1-\beta _t} \mathbf{x} _{t-1}, \beta _t \mathbf{I} )$ for small values of $\beta_t$.
 <p align="center">
 <img src="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/DDPM.png" style="width: 90%;" class="center" />
 <figcaption>Fig. Markov chain of forward (reverse) diffusion process (Ref: <a href="https://arxiv.org/abs/2006.11239" target="_blank">Ho et al. 2020</a> with additions by <a href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/#forward-diffusion-process"> Lil'log</a>)</figcaption>
@@ -105,6 +105,19 @@ Due to bug: https://stackoverflow.com/questions/78158848/how-to-render-both-of-l
 </br>
 
 ## References:
-[1] Started the code based on outlier's "Diffusion-Models-pytorch" repo on [github](https://github.com/dome272/Diffusion-Models-pytorch).
+[1] Started the code based on outlier's [Diffusion-Models-pytorch](https://github.com/dome272/Diffusion-Models-pytorch) repo.
 
 [2] Also used his youtube tutorial [[Diffusion Models | Pytorch Implementation](https://www.youtube.com/watch?v=TBCRlnwJtZU)].
+
+[3] Referring and using Phil Wang's (lucidrains)   [denoising-diffusion-pytorch](https://github.com/lucidrains/denoising-diffusion-pytorch) repo.
+
+[4] Lillian Weng's blog (lil'log) https://lilianweng.github.io/posts/2021-07-11-diffusion-models/
+
+[5] <a href="https://arxiv.org/abs/2006.11239" target="_blank">Ho et al. 2020</a> "Denoising Diffusion Probabilistic Models" paper with [original implementation](https://github.com/hojonathanho/diffusion) and its [pytorch reimplementation](https://github.com/pesser/pytorch_diffusion) by Patrick Esser.
+
+[6] Referred to CompVis' [Latent Diffusion Models](https://github.com/CompVis/latent-diffusion) repo and paper [Rombach et al. 2022](https://arxiv.org/abs/2112.10752) "High-Resolution Image Synthesis with Latent Diffusion Models"
+
+[7] HuggingFace's [Diffusers](https://github.com/huggingface/diffusers): State-of-the-art diffusion models for image and audio generation in PyTorch and FLAX. For quickly testing DDPM [here](https://huggingface.co/docs/diffusers/api/pipelines/ddpm)
+
+[8] [MMagic](https://github.com/open-mmlab/mmagic) from OpenMMLab with nice resource on [Stable Diffusion](https://github.com/open-mmlab/mmagic/blob/main/configs/stable_diffusion/README.md) which mainly builds on HuggingFace's [diffusers](https://github.com/huggingface/diffusers).
+
