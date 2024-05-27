@@ -104,7 +104,7 @@ class Up(nn.Module):
 class UNet(nn.Module):
 
     #
-    def __init__(self, c_in=3, c_out=3, time_dim=256, device="cuda"):
+    def __init__(self, c_in=3, c_out=3, time_dim=256, device="cuda", img_size=64):
         super().__init__()
         self.device = device
         self.time_dim = time_dim
@@ -112,11 +112,12 @@ class UNet(nn.Module):
         # Encoder
         self.inc = DoubleConv(c_in, 64)    # summary(self.inc, (12,3,64,64))
         self.down1 = Down(64, 128)         # summary(self.down1, [(12,64,64,64), (12,256)])
-        self.sa1 = SelfAttention(128, 32)
+        self.sa1 = SelfAttention(128, img_size//2)  # 32: Self Attention on 1024 words (i.e. 32x32 latent pixels) of d_model=128 channels 
         self.down2 = Down(128, 256)
-        self.sa2 = SelfAttention(256, 16)
+        self.sa2 = SelfAttention(256, img_size//4)  # 16: Self Attention on 256 words (i.e. 16x16 latent pixels) of d_model=256 channels 
+        self.down2 = Down(128, 256)
         self.down3 = Down(256, 256)
-        self.sa3 = SelfAttention(256, 8)
+        self.sa3 = SelfAttention(256, img_size//8)  # 8:  Self Attention on 64 words (i.e. 8x8 latent pixels) of d_model=256 channels 
 
         # Bottleneck
         self.bot1 = DoubleConv(256, 512)
@@ -125,11 +126,11 @@ class UNet(nn.Module):
 
         # Decoder
         self.up1 = Up(512, 128)
-        self.sa4 = SelfAttention(128, 16)
+        self.sa4 = SelfAttention(128, img_size//4)  # 16:
         self.up2 = Up(256, 64)
-        self.sa5 = SelfAttention(64, 32)
+        self.sa5 = SelfAttention(64, img_size//2)   # 32:
         self.up3 = Up(128, 64)
-        self.sa6 = SelfAttention(64, 64)
+        self.sa6 = SelfAttention(64, img_size)   # 64:
         self.outc = nn.Conv2d(64, c_out, kernel_size=1)
 
 
