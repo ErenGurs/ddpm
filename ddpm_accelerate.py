@@ -161,8 +161,8 @@ if __name__ == '__main__':
     #args.run_name = "DDPM_Unconditional_landscape"
     args.run_name = "DDPM_Unconditional"
     args.epochs = 500
-    args.batch_size = 12
-    args.image_size = 64
+    args.batch_size = 4    # 12 : Original batch size is reduced for 128x128 to fit into memory
+    args.image_size = 128  # 64 : Original image size
     #args.dataset_path = r"./landscape_img_folder"
     #args.dataset_path = r"./img_align_celeba/"
     args.dataset_path = r"./ffhq512_full/"

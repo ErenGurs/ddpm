@@ -27,7 +27,16 @@ conductor s3 cp s3://egurses-diffusion/Datasets/celeba.zip ./
 echo "Uncompressing celeba.zip to celeba/"
 unzip ./celeba.zip
 echo "Uncompress celeba/img_align_celeba.zip to img_align_celeba/"
-unzip -j celeba/img_align_celeba.zip -d img_align_celeba/train/ > /dev/null 2>&1 
+unzip -j celeba/img_align_celeba.zip -d img_align_celeba/train/ > /dev/null 2>&1
+
+# First tar'ed 40000 images (out of 70000) from ffhq and put it in conductor as ffhq512_full1.tar
+#   $ tar -cvf ffhq512_full1.tar ffhq512_full/train/ > /dev/null 2>&1
+echo
+mkdir -p ffhq512_full/train/
+echo "Downloading s3://egurses-diffusion/Datasets/ffhq512_full1.tar"
+conductor s3 cp s3://egurses-diffusion/Datasets/ffhq512_full1.tar ./
+echo "Untar ffhq512_full1.tar to ffhq512_full/"
+tar -xvf ./ffhq512_full1.tar
 
 echo "Downloading checkpoints for celeba"
 conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch80.pt ./models/
