@@ -1,7 +1,15 @@
 #!/bin/bash
 
 # Setup the shell related items
+
+echo "shell -\$SHELL" > ~/.screenrc
 export PATH=$PATH:/coreflow/venv/bin/
+echo 'export PATH=$PATH:/coreflow/venv/bin/' >> ~/.bashrc
+source ~/.bashrc
+# Non-interactive shells do not expand aliases by default. You need to execute shopt -s expand_aliases explicitly before defining the aliases.
+# Be aware that ~/.bashrc is generally only sourced with an interactive shell as well, so you might want to explicitly source it.
+# https://unix.stackexchange.com/questions/258219/how-to-define-alias-for-non-interactive-non-login-shell#:~:text=Non%2Dinteractive%20shells%20do%20not,want%20to%20explicitly%20source%20it.
+shopt -s expand_aliases
 alias blobby='aws --endpoint-url https://blob.mr3.simcloud.apple.com --cli-read-timeout 300'
 alias conductor='AWS_EC2_METADATA_DISABLED=true aws --endpoint-url https://conductor.data.apple.com'
 
