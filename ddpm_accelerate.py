@@ -8,6 +8,7 @@ from utils import *
 from modules import UNet
 
 from accelerate import Accelerator
+from ema_pytorch import EMA
 
 import logging
 from torch.utils.tensorboard import SummaryWriter
@@ -48,6 +49,11 @@ class Trainer(object):
 
         if self.accelerator.is_main_process:
             print("Initializations only needed by the main process is done here  (for. ex model reading/writing, EMA)")
+            ema_update_every = 10,
+            ema_decay = 0.995,
+            diffusion = self.accelerator.unwrap_model(self.diffusion)  # unwrap accelerator around self.diffusion and use it for EMA
+            self.ema = EMA(diffusion, beta = ema_decay, update_every = ema_update_every)
+            self.ema.to(self.device)
 
         mse = nn.MSELoss() # not used, delete it!
 
@@ -91,15 +97,23 @@ class Trainer(object):
                 #if (i > 200): # To be removed. Quick training for debugging etc.
                 #    break
 
-            # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
-            if epoch % 10 == 0 and self.accelerator.is_main_process:
-                # Before learning 'accelerator.unwrap_model(.)' this was how I got rid of the DDP layer (called 'module') wrapped around the model.
-                # diffusion = self.diffusion.module if isinstance(self.diffusion, nn.parallel.DistributedDataParallel) else self.diffusion
-                diffusion = self.accelerator.unwrap_model(self.diffusion)
-                sampled_images = diffusion.sample(n=images.shape[0])
-                save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
-                #torch.save(self.accelerator.get_state_dict(self.diffusion.module.model), os.path.join("models", args.run_name, f"ckpt_diffusion.pt"))
-                torch.save(self.accelerator.get_state_dict(diffusion.model), os.path.join("models", args.run_name, f"ckpt_diffusion.pt"))
+            if self.accelerator.is_main_process:
+                # Update the EMA version of the model 
+                self.ema.update()
+
+                # Sample from Diffusion (and EMA) model by putting it into evaluation mode (see model.eval())
+                if epoch % 10 == 0 :
+                    # 1) Sample from diffusion model (accelerator wrapped)
+                    #    Before learning 'accelerator.unwrap_model(.)' this was how I got rid of the DDP layer (called 'module') wrapped around the model.
+                    #    diffusion = self.diffusion.module if isinstance(self.diffusion, nn.parallel.DistributedDataParallel) else self.diffusion
+                    diffusion = self.accelerator.unwrap_model(self.diffusion)
+                    sampled_images = diffusion.sample(n=images.shape[0])
+                    save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
+                    torch.save(self.accelerator.get_state_dict(diffusion.model), os.path.join("models", args.run_name, f"ckpt_diffusion.pt"))
+                    # 2) Sample from EMA(diffusion) model (accelerator wrapped)
+                    sampled_images_ema = self.ema.sample(n=images.shape[0])
+                    save_images(sampled_images_ema, os.path.join("results", args.run_name, f"{epoch}_ema.jpg"))
+                    torch.save(self.accelerator.get_state_dict(self.ema), os.path.join("models", args.run_name, f"ckpt_diffusion_ema.pt"))
 
 
 def test(args):
@@ -161,8 +175,8 @@ if __name__ == '__main__':
     #args.run_name = "DDPM_Unconditional_landscape"
     args.run_name = "DDPM_Unconditional"
     args.epochs = 500
-    args.batch_size = 4    # 12 : Original batch size is reduced for 128x128 to fit into memory
-    args.image_size = 128  # 64 : Original image size
+    args.batch_size = 12   # 4    # 12 : Original batch size is reduced for 128x128 to fit into memory
+    args.image_size = 64   # 128  # 64 : Original image size
     #args.dataset_path = r"./landscape_img_folder"
     #args.dataset_path = r"./img_align_celeba/"
     args.dataset_path = r"./ffhq512_full/"
