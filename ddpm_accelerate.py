@@ -37,7 +37,7 @@ class Trainer(object):
         # Get Data Loader
         #self.dataloader = get_data(args)
         self.dataloader = self.accelerator.prepare( get_data(args) )
-        model = UNet().to(self.device)
+        model = UNet(img_size=args.image_size).to(self.device)
         self.optimizer = optim.AdamW(model.parameters(), lr=args.lr)
         self.diffusion = GaussianDiffusion(model, img_size=args.image_size, device=self.device)
         self.diffusion, self.optimizer = self.accelerator.prepare(self.diffusion, self.optimizer)
@@ -109,7 +109,7 @@ def test(args):
 
     device = args.device
     # Load model: Different from training No need for data loader or optimizer
-    model = UNet().to(device)
+    model = UNet(img_size=args.image_size).to(device)
 
     # 1) checkpoint is an OrderedDict with list of keys given by checkpoint.keys()
     #    For ex. checkpoint['inc.double_conv.0.weight'] gives weights (and biases) of the 
@@ -161,10 +161,11 @@ if __name__ == '__main__':
     #args.run_name = "DDPM_Unconditional_landscape"
     args.run_name = "DDPM_Unconditional"
     args.epochs = 500
-    args.batch_size = 12
-    args.image_size = 64
+    args.batch_size = 4    # 12 : Original batch size is reduced for 128x128 to fit into memory
+    args.image_size = 128  # 64 : Original image size
     #args.dataset_path = r"./landscape_img_folder"
-    args.dataset_path = r"./img_align_celeba/"
+    #args.dataset_path = r"./img_align_celeba/"
+    args.dataset_path = r"./ffhq512_full/"
     args.device = "cuda"
     args.lr = 3e-4
 

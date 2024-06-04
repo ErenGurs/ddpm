@@ -1,0 +1,24 @@
+name: 'Diffusion'
+description: 'pytorch'
+project_id: ve_dvp
+command: 'bash -i training_scripts/run_training.sh'
+is_parent: false
+environment_variables:
+  CUDA_HOME: /usr/local/cuda
+  LD_LIBRARY_PATH: $LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
+cluster_options:
+   gcp:
+     instance_type: a2-ultragpu-8g
+resources:
+  docker_image: docker.apple.com/test0_docker/egurses-docker-pytorch-1-9:latest
+  cluster: 'GCP_ALL'
+  disk_gb: 500.0
+  num_gpus: 4
+  num_cpus: 32
+  memory_gb: 140
+#  num_gpus: 1
+#  num_cpus: 8
+  timeout: 14d
+  ports: ["TENSORBOARD_PORT"]
+setup_command: source training_scripts/setup.sh
+tags: ['xxx'] # put your name here
