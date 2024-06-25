@@ -86,9 +86,11 @@ class GaussianDiffusion(nn.Module):
                     a=a+1
         self.model.train()
 
+        #
+        # Move denormalization outside sample(.) function to make it compliant with lucidrains Diffusion
+        #
         # Clamp the output to normalized range of (-1,1)
-        #x = x.clamp(-1, 1)
-        x = (x.clamp(-1, 1) + 1) / 2
-        x = (x * 255).type(torch.uint8)
+        #x = (x.clamp(-1, 1) + 1) / 2
+        #x = (x * 255).type(torch.uint8)
 
         return x
