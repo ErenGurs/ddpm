@@ -10,14 +10,14 @@ import sys
 base_directory = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(base_directory)
 
-#from modules import UNet
+from modules import UNet
+#from denoising_diffusion_outlier import GaussianDiffusion
 from denoising_diffusion_pytorch import Unet, GaussianDiffusion  #, Trainer
 
 from accelerate import Accelerator
 
 import logging
 from torch.utils.tensorboard import SummaryWriter
-#from denoising_diffusion_outlier import GaussianDiffusion
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s: %(message)s", level=logging.INFO, datefmt="%I:%H:%S")
 
@@ -54,6 +54,7 @@ class Trainer(object):
         #self.diffusion = GaussianDiffusion(model, img_size=args.image_size, device=self.device)
         # Lucidrains Diffusion class
         self.diffusion = GaussianDiffusion(model,image_size = args.image_size, timesteps = 1000)
+        
         self.diffusion, self.optimizer = self.accelerator.prepare(self.diffusion, self.optimizer)
         #print ('>>>> Current cuda device ', torch.cuda.current_device())
 
@@ -102,7 +103,7 @@ class Trainer(object):
 
                 self.accelerator.wait_for_everyone()
 
-                #if (i > 100): # To be removed. Quick training for debugging etc.
+                #if (i > 200): # To be removed. Quick training for debugging etc.
                 #    break
 
             # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
@@ -116,7 +117,7 @@ class Trainer(object):
                 sampled_images = diffusion.sample(batch_size=images.shape[0])
 
                 # Denormalize to [0,255]: Clamp the output to normalized range of (-1,1)
-                sampled_images = (sampled_images.clamp(-1, 1) + 1) / 2
+                #sampled_images = (sampled_images.clamp(-1, 1) + 1) / 2
                 sampled_images = (sampled_images * 255).type(torch.uint8)
 
                 save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
@@ -162,13 +163,18 @@ def test(args):
     # epoch = checkpoint['epoch']
     # loss = checkpoint['loss']
 
-    # Instantiate Diffusion class
-    diffusion = GaussianDiffusion(model, img_size=args.image_size, device=device)
+    # Outlier's: Instantiate Diffusion class
+    #diffusion = GaussianDiffusion(model, img_size=args.image_size, device=device)
+    # Lucidrains: Instantiate Diffusion class
+    diffusion = GaussianDiffusion(model, image_size = args.image_size, timesteps = 1000)
 
     # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
     sampled_images = diffusion.sample(n=args.batch_size)
+    # Normalization/Denormalization is done in the GaussianDiffusion class
+    # 1. Normalize [0,1] -> [-1,1] at the beginning of GaussianDiffusion.forward()
+    # 2. Denormalize [-1,1] -> [0,1] at the end of GaussianDiffusion.sample()
     # Denormalize to [0,255]: Clamp the output to normalized range of (-1,1)
-    sampled_images = (sampled_images.clamp(-1, 1) + 1) / 2
+    #sampled_images = (sampled_images.clamp(-1, 1) + 1) / 2
     sampled_images = (sampled_images * 255).type(torch.uint8)
     save_images(sampled_images, os.path.join("results", args.run_name, f"sample.jpg"))
 
