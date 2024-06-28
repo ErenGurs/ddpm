@@ -10,8 +10,10 @@ import sys
 base_directory = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(base_directory)
 
-from modules import UNet
+# Outlier's model
+#from modules import UNet
 #from denoising_diffusion_outlier import GaussianDiffusion
+# Lucidrains model
 from denoising_diffusion_pytorch import Unet, GaussianDiffusion  #, Trainer
 
 from accelerate import Accelerator
@@ -132,7 +134,10 @@ def test(args):
 
     device = args.device
     # Load model: Different from training No need for data loader or optimizer
-    model = UNet(img_size=args.image_size).to(device)
+    #Outlier's UNet
+    # model = UNet(img_size=args.image_size).to(device)
+    #Lucidrains Unet  (sampling doesn't work right now)
+    model = Unet(dim = 64, dim_mults = (1, 2, 4, 8), flash_attn = False).to(device) # flash_attn=True
 
     # 1) checkpoint is an OrderedDict with list of keys given by checkpoint.keys()
     #    For ex. checkpoint['inc.double_conv.0.weight'] gives weights (and biases) of the 
@@ -163,13 +168,14 @@ def test(args):
     # epoch = checkpoint['epoch']
     # loss = checkpoint['loss']
 
-    # Outlier's: Instantiate Diffusion class
+    # Outlier's: Instantiate Diffusion class and sample from it (putting it into evaluation mode)
     #diffusion = GaussianDiffusion(model, img_size=args.image_size, device=device)
-    # Lucidrains: Instantiate Diffusion class
+    #sampled_images = diffusion.sample(n=args.batch_size)
+    
+    # Lucidrains: Instantiate Diffusion class and sample from it
     diffusion = GaussianDiffusion(model, image_size = args.image_size, timesteps = 1000)
+    sampled_images = diffusion.sample(batch_size=args.batch_size)
 
-    # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
-    sampled_images = diffusion.sample(n=args.batch_size)
     # Normalization/Denormalization is done in the GaussianDiffusion class
     # 1. Normalize [0,1] -> [-1,1] at the beginning of GaussianDiffusion.forward()
     # 2. Denormalize [-1,1] -> [0,1] at the end of GaussianDiffusion.sample()
@@ -192,7 +198,7 @@ if __name__ == '__main__':
     #args.run_name = "DDPM_Unconditional_landscape"
     args.run_name = "DDPM_Unconditional"
     args.epochs = 500
-    args.batch_size = 12    # 4/12 : Original batch size is reduced for 128x128 to fit into memory
+    args.batch_size = 4    # 4/12 : Original batch size is reduced for 128x128 to fit into memory
     args.image_size = 128  # 64 : Original image size
     #args.dataset_path = r"./landscape_img_folder"
     #args.dataset_path = r"./img_align_celeba/"
