@@ -137,7 +137,7 @@ def test(args):
     #Outlier's UNet
     # model = UNet(img_size=args.image_size).to(device)
     #Lucidrains Unet  (sampling doesn't work right now)
-    model = Unet(dim = 64, dim_mults = (1, 2, 4, 8), flash_attn = False).to(device) # flash_attn=True
+    model = Unet(dim = 64, dim_mults = (1, 2, 4, 8), flash_attn = False) # flash_attn=True
 
     # 1) checkpoint is an OrderedDict with list of keys given by checkpoint.keys()
     #    For ex. checkpoint['inc.double_conv.0.weight'] gives weights (and biases) of the 
@@ -173,7 +173,7 @@ def test(args):
     #sampled_images = diffusion.sample(n=args.batch_size)
     
     # Lucidrains: Instantiate Diffusion class and sample from it
-    diffusion = GaussianDiffusion(model, image_size = args.image_size, timesteps = 1000)
+    diffusion = GaussianDiffusion(model, image_size = args.image_size, timesteps = 1000).to(device)
     sampled_images = diffusion.sample(batch_size=args.batch_size)
 
     # Normalization/Denormalization is done in the GaussianDiffusion class
@@ -198,7 +198,7 @@ if __name__ == '__main__':
     #args.run_name = "DDPM_Unconditional_landscape"
     args.run_name = "DDPM_Unconditional"
     args.epochs = 500
-    args.batch_size = 4    # 4/12 : Original batch size is reduced for 128x128 to fit into memory
+    args.batch_size = 12    # 4/12 : Original batch size is reduced for 128x128 to fit into memory
     args.image_size = 128  # 64 : Original image size
     #args.dataset_path = r"./landscape_img_folder"
     #args.dataset_path = r"./img_align_celeba/"
