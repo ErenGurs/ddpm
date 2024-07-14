@@ -4,6 +4,7 @@ import torchvision
 from PIL import Image
 #from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader
+from multiprocessing import cpu_count
 
 def get_data(args):
     transforms = torchvision.transforms.Compose([
@@ -15,7 +16,7 @@ def get_data(args):
         #torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     dataset = torchvision.datasets.ImageFolder(args.dataset_path, transform=transforms)
-    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, pin_memory = True, num_workers = cpu_count())
     return dataloader
 
 def save_images(images, path, **kwargs):
