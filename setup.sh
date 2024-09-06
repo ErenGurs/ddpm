@@ -62,3 +62,14 @@ echo "Downloading lucidrains.origrepo trained models s3://egurses-diffusion/ddpm
 conductor s3 cp s3://egurses-diffusion/ddpm/models_lucidrains.origrepo.tar .
 echo "Extracting models_lucidrains.origrepo.tar"
 tar xvf ./models_lucidrains.origrepo.tar
+
+
+echo "Downloading lucidrains.ddpmrepo results s3://egurses-diffusion/ddpm/results_lucidrains.ddpmrepo.tgz"
+conductor s3 cp s3://egurses-diffusion/ddpm/results_lucidrains.ddpmrepo.tgz .
+echo "Extracting results_lucidrains.ddpmrepo.tgz"
+tar -xvzf ./results_lucidrains.ddpmrepo.tgz > /dev/null 2>&1
+
+echo "Downloading lucidrains.ddpmrepo trained models s3://egurses-diffusion/ddpm/models_lucidrains.ddpmgrepo.tar"
+conductor s3 cp s3://egurses-diffusion/ddpm/models_lucidrains.ddpmrepo.tar .
+echo "Extracting models_lucidrains.ddpmrepo.tar"
+tar xvf ./models_lucidrains.ddpmrepo.tar

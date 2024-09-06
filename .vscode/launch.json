@@ -49,7 +49,7 @@
                 //"/mnt/task_runtime/ddpm/models_outlier/DDPM_Unconditional.celeba64x64/ckpt_epoch80_ddpm_accelerate.pt",
                 //"/mnt/task_runtime/ddpm/models_outlier/DDPM_Unconditional.celeba64x64/ckpt_epoch490_ddpm_accelerate.pt",
                 //"/mnt/task_runtime/ddpm/models_outlier/DDPM_Unconditional.ffhq128x128_WithAttentionFix/ckpt_diffusion.pt",
-                "/mnt/task_runtime/models_lucidrains/DDPM_Unconditional.ffhq128x128/ckpt_diffusion.pt",
+                "/mnt/task_runtime/ddpm/models_lucidrains/DDPM_Unconditional.ffhq128x128/ckpt_diffusion.pt",
                 "--ckpt_sampling",
             ],
         },

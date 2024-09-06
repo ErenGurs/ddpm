@@ -48,9 +48,25 @@ echo "Untar ffhq512_full1.tar to ffhq512_full/"
 tar -xvf ./ffhq512_full1.tar > /dev/null 2>&1
 
 echo "Downloading checkpoints for celeba"
-conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch80.pt ./models/
-conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch300.pt ./models/
-conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch80_ddpm_accelerate.pt ./models/
-conductor s3 cp s3://egurses-diffusion/ddpm/models_celeba/ckpt_epoch490_ddpm_accelerate.pt ./models/
-conductor s3 cp s3://egurses-diffusion/ddpm/models_landscape/ckpt_epoch490_ddpm_accelerate.pt ./models/ckpt_epoch490_ddpm_accelerate_landscape.pt
+#conductor s3 cp s3://egurses-diffusion/ddpm/models_outlier/DDPM_Unconditional.celeba64x64/ckpt_epoch80.pt ./models/
+#conductor s3 cp s3://egurses-diffusion/ddpm/models_outlier/DDPM_Unconditional.celeba64x64/ckpt_epoch300.pt ./models/
+#conductor s3 cp s3://egurses-diffusion/ddpm/models_outlier/DDPM_Unconditional.celeba64x64/ckpt_epoch80_ddpm_accelerate.pt ./models/
+#conductor s3 cp s3://egurses-diffusion/ddpm/models_outlier/DDPM_Unconditional.celeba64x64/ckpt_epoch490_ddpm_accelerate.pt ./models/
+conductor s3 cp --recursive s3://egurses-diffusion/ddpm/models_outlier/DDPM_Unconditional.celeba64x64 ./models_outlier/DDPM_Unconditional.celeba64x64
 
+#conductor s3 cp s3://egurses-diffusion/ddpm/models_outlier/DDPM_Unconditional.landscape64x64/ckpt_epoch490_ddpm_accelerate.pt ./models/ckpt_epoch490_ddpm_accelerate_landscape.pt
+conductor s3 cp --recursive s3://egurses-diffusion/ddpm/models_outlier/DDPM_Unconditional.landscape64x64 ./models_outlier/DDPM_Unconditional.landscape64x64/
+conductor s3 cp --recursive s3://egurses-diffusion/ddpm/models_outlier/DDPM_Unconditional.ffhq128x128_WithAttentionFix/ ./models_outlier/DDPM_Unconditional.ffhq128x128_WithAttentionFix/
+
+conductor s3 cp --recursive s3://egurses-diffusion/ddpm/models_lucidrains/DDPM_Unconditional.ffhq128x128/ ./models_lucidrains/DDPM_Unconditional.ffhq128x128/
+
+
+echo "Downloading lucidrains.origrepo results s3://egurses-diffusion/ddpm/results_lucidrains.origrepo.tgz"
+conductor s3 cp s3://egurses-diffusion/ddpm/results_lucidrains.origrepo.tgz .
+echo "Extracting results_lucidrains.origrepo.tgz"
+tar -xvzf ./results_lucidrains.origrepo.tgz > /dev/null 2>&1
+
+echo "Downloading lucidrains.origrepo trained models s3://egurses-diffusion/ddpm/models_lucidrains.origrepo.tar"
+conductor s3 cp s3://egurses-diffusion/ddpm/models_lucidrains.origrepo.tar .
+echo "Extracting models_lucidrains.origrepo.tar"
+tar xvf ./models_lucidrains.origrepo.tar
