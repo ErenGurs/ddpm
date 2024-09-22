@@ -20,7 +20,7 @@ source ./setup.sh
 ## Sampling
 Also trained it for the `celeba` dataset. Download three example checkpoints (epoch 30, 80, 490) from the bucket (or `/ddpm/models_celeba/`). Then sample from these three checkpoints (saved as models/ckpt_epoch[30, 80, 490]_ddpm.pt):
 ```
-python ddpm_accelerate.py --ckpt /mnt/task_runtime/ddpm/models/ckpt_epoch490.pt --ckpt_sampling
+python ddpm_accelerate.py --ckpt /mnt/task_runtime/ddpm/models_lucidrains/DDPM_Unconditional.ffhq128x128/ckpt_diffusion.pt --ckpt_sampling
 ```
 <figure>
 <figcaption>Epoch 80 ckpt</figcaption>
