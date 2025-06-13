@@ -5,13 +5,21 @@ from matplotlib import pyplot as plt
 from tqdm import tqdm
 from torch import optim
 from utils import *
-from modules import UNet
+
+import sys
+base_directory = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(base_directory)
+
+# Outlier's model
+#from modules import UNet
+#from denoising_diffusion_outlier import GaussianDiffusion
+# Lucidrains model
+from denoising_diffusion_pytorch import Unet, GaussianDiffusion  #, Trainer
 
 from accelerate import Accelerator
 
 import logging
 from torch.utils.tensorboard import SummaryWriter
-from denoising_diffusion_outlier import GaussianDiffusion
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s: %(message)s", level=logging.INFO, datefmt="%I:%H:%S")
 
@@ -37,9 +45,18 @@ class Trainer(object):
         # Get Data Loader
         #self.dataloader = get_data(args)
         self.dataloader = self.accelerator.prepare( get_data(args) )
-        model = UNet(img_size=args.image_size).to(self.device)
+
+        # Outlier's UNet(.) class
+        #model = UNet(img_size=args.image_size).to(self.device)
+        # Lucidrains Unet(.) class
+        model = Unet(dim = 64, dim_mults = (1, 2, 4, 8), flash_attn = False) # flash_attn=True
+        
         self.optimizer = optim.AdamW(model.parameters(), lr=args.lr)
-        self.diffusion = GaussianDiffusion(model, img_size=args.image_size, device=self.device)
+        # Outlier's Diffusion class
+        #self.diffusion = GaussianDiffusion(model, img_size=args.image_size, device=self.device)
+        # Lucidrains Diffusion class
+        self.diffusion = GaussianDiffusion(model,image_size = args.image_size, timesteps = 1000)
+        
         self.diffusion, self.optimizer = self.accelerator.prepare(self.diffusion, self.optimizer)
         #print ('>>>> Current cuda device ', torch.cuda.current_device())
 
@@ -96,7 +113,15 @@ class Trainer(object):
                 # Before learning 'accelerator.unwrap_model(.)' this was how I got rid of the DDP layer (called 'module') wrapped around the model.
                 # diffusion = self.diffusion.module if isinstance(self.diffusion, nn.parallel.DistributedDataParallel) else self.diffusion
                 diffusion = self.accelerator.unwrap_model(self.diffusion)
-                sampled_images = diffusion.sample(n=images.shape[0])
+                # Outliers diffusionsample() function
+                #sampled_images = diffusion.sample(n=images.shape[0])
+                # Lucidrains diffusionsample() function
+                sampled_images = diffusion.sample(batch_size=images.shape[0])
+
+                # Denormalize to [0,255]: Clamp the output to normalized range of (-1,1)
+                #sampled_images = (sampled_images.clamp(-1, 1) + 1) / 2
+                sampled_images = (sampled_images * 255).type(torch.uint8)
+
                 save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
                 #torch.save(self.accelerator.get_state_dict(self.diffusion.module.model), os.path.join("models", args.run_name, f"ckpt_diffusion.pt"))
                 torch.save(self.accelerator.get_state_dict(diffusion.model), os.path.join("models", args.run_name, f"ckpt_diffusion.pt"))
@@ -109,7 +134,10 @@ def test(args):
 
     device = args.device
     # Load model: Different from training No need for data loader or optimizer
-    model = UNet(img_size=args.image_size).to(device)
+    #Outlier's UNet
+    # model = UNet(img_size=args.image_size).to(device)
+    #Lucidrains Unet  (sampling doesn't work right now)
+    model = Unet(dim = 64, dim_mults = (1, 2, 4, 8), flash_attn = False) # flash_attn=True
 
     # 1) checkpoint is an OrderedDict with list of keys given by checkpoint.keys()
     #    For ex. checkpoint['inc.double_conv.0.weight'] gives weights (and biases) of the 
@@ -118,6 +146,9 @@ def test(args):
     #      for i, (key, value) in enumerate(checkpoint.items()):
     #          print(key, value)
     checkpoint = torch.load(args.ckpt)
+    # strip_model_key: if checkpoint is a dict_keys(['step', 'model', 'opt', 'ema', 'scaler', 'version']), 
+    if 'model' in checkpoint :
+        checkpoint = strip_model_key(checkpoint['model'])  # Params have model. prefix: "model.init_conv.weight"
     model.load_state_dict(checkpoint)
     #
     # if you don't want to resume training, it is common to set to valuation mode.
@@ -140,11 +171,20 @@ def test(args):
     # epoch = checkpoint['epoch']
     # loss = checkpoint['loss']
 
-    # Instantiate Diffusion class
-    diffusion = GaussianDiffusion(model, img_size=args.image_size, device=device)
+    # Outlier's: Instantiate Diffusion class and sample from it (putting it into evaluation mode)
+    #diffusion = GaussianDiffusion(model, img_size=args.image_size, device=device)
+    #sampled_images = diffusion.sample(n=args.batch_size)
+    
+    # Lucidrains: Instantiate Diffusion class and sample from it
+    diffusion = GaussianDiffusion(model, image_size = args.image_size, timesteps = 1000).to(device)
+    sampled_images = diffusion.sample(batch_size=args.batch_size)
 
-    # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
-    sampled_images = diffusion.sample(n=args.batch_size)
+    # Normalization/Denormalization is done in the GaussianDiffusion class
+    # 1. Normalize [0,1] -> [-1,1] at the beginning of GaussianDiffusion.forward()
+    # 2. Denormalize [-1,1] -> [0,1] at the end of GaussianDiffusion.sample()
+    # Denormalize to [0,255]: Clamp the output to normalized range of (-1,1)
+    #sampled_images = (sampled_images.clamp(-1, 1) + 1) / 2
+    sampled_images = (sampled_images * 255).type(torch.uint8)
     save_images(sampled_images, os.path.join("results", args.run_name, f"sample.jpg"))
 
 
@@ -161,7 +201,7 @@ if __name__ == '__main__':
     #args.run_name = "DDPM_Unconditional_landscape"
     args.run_name = "DDPM_Unconditional"
     args.epochs = 500
-    args.batch_size = 4    # 12 : Original batch size is reduced for 128x128 to fit into memory
+    args.batch_size = 12    # 4/12 : Original batch size is reduced for 128x128 to fit into memory
     args.image_size = 128  # 64 : Original image size
     #args.dataset_path = r"./landscape_img_folder"
     #args.dataset_path = r"./img_align_celeba/"

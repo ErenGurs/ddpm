@@ -13,7 +13,7 @@
             "args": [
                 "--ckpt",
                 //"/mnt/task_runtime/ddpm/models/DDPM_Unconditional/ckpt.pt",
-                "/mnt/task_runtime/ddpm/models/ckpt_epoch80.pt",
+                "/mnt/task_runtime/ddpm/models_outlier/DDPM_Unconditional.celeba64x64/ckpt_epoch80.pt",
                 "--ckpt_sampling",
             ],
         },
@@ -41,12 +41,15 @@
             "request": "launch",
             "program": "ddpm_accelerate.py",
             "console": "integratedTerminal",
+            "justMyCode": false,
             "args": [
                 "--ckpt",
-                //"/mnt/task_runtime/ddpm/models/DDPM_Unconditional/ckpt.pt",
-                //"/mnt/task_runtime/ddpm/models/ckpt_epoch140_ddpm_accelerate.pt",
-                //"/mnt/task_runtime/ddpm/models/ckpt_diffusion.pt",
-                "/mnt/task_runtime/ddpm/models/ckpt_epoch80_ddpm_accelerate.pt",
+                //
+                // 1) Use weights trained by lucidrains original "denoising_diffusion_pytorch" repo:
+                //"/mnt/task_runtime/ddpm/models_lucidrains.origrepo/model-100.pt",
+                //"/mnt/task_runtime/ddpm/models_lucidrains.origrepo/model-700.pt",
+                // 2) Use weights trained by this "ddpm" repo
+                "/mnt/task_runtime/ddpm/models_lucidrains/DDPM_Unconditional.ffhq128x128/ckpt_diffusion.pt",
                 "--ckpt_sampling",
             ],
         },

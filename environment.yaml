@@ -29,3 +29,5 @@ dependencies:
     - matplotlib
     - torchinfo
     - accelerate==0.29.3
+    - ema-pytorch==0.4.2
+    - pytorch-fid

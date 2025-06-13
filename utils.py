@@ -4,6 +4,7 @@ import torchvision
 from PIL import Image
 #from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader
+from multiprocessing import cpu_count
 
 def get_data(args):
     transforms = torchvision.transforms.Compose([
@@ -12,10 +13,10 @@ def get_data(args):
         torchvision.transforms.Resize(int(args.image_size + 1/4 *args.image_size)),  # args.image_size + 1/4 *args.image_size
         torchvision.transforms.RandomResizedCrop(args.image_size, scale=(0.8, 1.0)),
         torchvision.transforms.ToTensor(),
-        torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        #torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     dataset = torchvision.datasets.ImageFolder(args.dataset_path, transform=transforms)
-    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, pin_memory = True, num_workers = cpu_count())
     return dataloader
 
 def save_images(images, path, **kwargs):
@@ -29,3 +30,14 @@ def setup_logging(run_name):
     os.makedirs("results", exist_ok=True)
     os.makedirs(os.path.join("models", run_name), exist_ok=True)
     os.makedirs(os.path.join("results", run_name), exist_ok=True)
+
+# Strip the keyword "model." from the dictionary. For. ex
+#   model.init_conv.weight -> init_conv.weight 
+#   model.downs.0.0.block1.proj.weight -> downs.0.0.block1.proj.weight
+#   ...
+def strip_model_key(model):
+    model_stripped = {}
+    for k in model:
+        if k.startswith('model.'):
+            model_stripped[k[6:]] = model[k]
+    return model_stripped

@@ -20,7 +20,7 @@ source ./setup.sh
 ## Sampling
 Also trained it for the `celeba` dataset. Download three example checkpoints (epoch 30, 80, 490) from the bucket (or `/ddpm/models_celeba/`). Then sample from these three checkpoints (saved as models/ckpt_epoch[30, 80, 490]_ddpm.pt):
 ```
-python ddpm_accelerate.py --ckpt /mnt/task_runtime/ddpm/models/ckpt_epoch490.pt --ckpt_sampling
+python ddpm_accelerate.py --ckpt /mnt/task_runtime/ddpm/models_lucidrains/DDPM_Unconditional.ffhq128x128/ckpt_diffusion.pt --ckpt_sampling
 ```
 <figure>
 <figcaption>Epoch 80 ckpt</figcaption>
@@ -75,7 +75,7 @@ In training, U-Net is trained to estimate the noise (i.e. the mean of $q(\mathbf
 
 <figcaption>
 
-Fig. For given $\beta_t$ schedule and large  $t$, the $q(\mathbf{x}_t|\mathbf{x}_0)$ becomes zero mean, unit variance Normal distribution $\mathcal{N}(\mathbf{x} _T; \mathbf{0}, \mathbf{I})$ for $T=1000$$
+Fig. For given $\beta_t$ schedule and large  $t$, the $q(\mathbf{x}_t|\mathbf{x}_0)$ becomes zero mean, unit variance Normal distribution $\mathcal{N}(\mathbf{x} _T; \mathbf{0}, \mathbf{I})$ for $T=1000$
 
 </figcaption>
 </p>
