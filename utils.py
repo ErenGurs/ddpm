@@ -30,3 +30,14 @@ def setup_logging(run_name):
     os.makedirs("results", exist_ok=True)
     os.makedirs(os.path.join("models", run_name), exist_ok=True)
     os.makedirs(os.path.join("results", run_name), exist_ok=True)
+
+# Strip the keyword "model." from the dictionary. For. ex
+#   model.init_conv.weight -> init_conv.weight 
+#   model.downs.0.0.block1.proj.weight -> downs.0.0.block1.proj.weight
+#   ...
+def strip_model_key(model):
+    model_stripped = {}
+    for k in model:
+        if k.startswith('model.'):
+            model_stripped[k[6:]] = model[k]
+    return model_stripped

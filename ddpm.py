@@ -89,6 +89,7 @@ def test(args):
 
     # Sample from Diffusion model by putting it into evaluation mode (see model.eval())
     sampled_images = diffusion.sample(n=args.batch_size)
+    sampled_images = (sampled_images * 255).type(torch.uint8)
     save_images(sampled_images, os.path.join("results", args.run_name, f"sample.jpg"))
 
 

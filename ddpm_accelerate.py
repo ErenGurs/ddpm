@@ -146,6 +146,9 @@ def test(args):
     #      for i, (key, value) in enumerate(checkpoint.items()):
     #          print(key, value)
     checkpoint = torch.load(args.ckpt)
+    # strip_model_key: if checkpoint is a dict_keys(['step', 'model', 'opt', 'ema', 'scaler', 'version']), 
+    if 'model' in checkpoint :
+        checkpoint = strip_model_key(checkpoint['model'])  # Params have model. prefix: "model.init_conv.weight"
     model.load_state_dict(checkpoint)
     #
     # if you don't want to resume training, it is common to set to valuation mode.
